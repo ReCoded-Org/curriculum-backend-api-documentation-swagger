@@ -59,7 +59,7 @@ app.get("/books/:id", (req, res) => {
 	if (book)
         res.status(200).json(book);
     else 
-        res.sendStatus(404).json({message: `Could not find book with ID ${id}`});
+        res.status(404).json({message: `Could not find book with ID ${id}`});
 });
 
 app.post("/books", (req, res) => {
