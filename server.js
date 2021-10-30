@@ -1,5 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 
 const app = express();
 const port = 3000;
@@ -7,6 +9,37 @@ const port = 3000;
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
+/**
+*  @swagger
+*    components:
+*      schemas:
+*        Book:
+*          type: object
+*          required:
+*            - title
+*            - author
+*          properties:
+*            id:
+*              type: integer
+*              description: The auto-generated id of the book.
+*            title:
+*              type: string
+*              description: The title of the book.
+*            author:
+*              type: string
+*              description: Who wrote the book?
+*            finished:
+*              type: boolean
+*              description: Have you finished reading this book?
+*            createdAt:
+*              type: string
+*              format: date
+*              description: The date of the record creation.
+*          example:
+*              title: The Pragmatic Programmer
+*              author: Andy Hunt / Dave Thomas
+*              finished: true
+*/
 const books = [
 	{
 		id: 1,
@@ -45,10 +78,41 @@ const books = [
 	},
 ];
 
+/**
+*  @swagger
+*    tags:
+*        name: Books
+*        description: API to manage your books.
+*/
+
+/**
+* @swagger
+* /:
+*   get:
+*     tags: [Books]
+*     description: Simple index API route
+*     responses:
+*       200:
+*         description: Returns a simple description string.
+*/
 app.get("/", (req, res) => {
     res.status(200).send("This is the Books Express API");
 })
 
+/**
+*  @swagger
+*    /books:
+*        get:
+*            tags: [Books]
+*            description: Lists all the books
+*            responses:
+*                200:
+*                    description: List of all books
+*                    content:
+*                        application/json:
+*                            schema:
+*                                $ref: '#/components/schemas/Book'
+*/
 app.get("/books", (req, res) => {
 	res.status(200).json(books);
 });
@@ -83,5 +147,34 @@ app.post("/books", (req, res) => {
 // Add more API endpoints below this comment
 
 // Add Swagger configuration options below this comment
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Books Express API with Swagger",
+      version: "0.1.0",
+      description:
+        "This is a simple API application made with Express and documented with Swagger",
+      license: {
+        name: "MIT",
+        url: "https://spdx.org/licenses/MIT.html",
+      },
+      contact: {
+        name: "Your Name",
+        url: "https://re-coded.com",
+        email: "youremail@email.com",
+      },
+    },
+    servers: [
+      {
+        url: "http://localhost:3000",
+      },
+    ],
+  },
+  apis: ["./server.js"],
+};
+
+const specs = swaggerJsdoc(options);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, { explorer: true }));  
 
 app.listen(port, () => console.debug(`Server listening on port ${port}`));
